@@ -5,73 +5,53 @@
 
 namespace sycl
 {
-
-
-
-    template <typename T, typename U = T>
-    inline constexpr Complex<T> pow(const Complex<T> &val, const Complex<U> &power)
+    template <typename T>
+    inline Complex<T> acospi(const Complex<T> &val)
     {
-        return Complex<T>();
-    }
-
-    template <typename T, typename U = T>
-    inline constexpr Complex<T> pow(const T val, const Complex<U> &power)
-    {
-        return Complex<T>();
+        return sycl::acos(val) / syConstants::PI;
     }
 
     template <typename T>
-    inline constexpr Complex<T> sin(const Complex<T> &val)
+    inline Complex<T> asinpi(const Complex<T> &val)
     {
-        return Complex<T>(
-            sycl::sin(val.real()) * sycl::cosh(val.imag()),
-            sycl::cos(val.real()) * sycl::sinh(val.imag()));
+        return sycl::asin(val) / syConstants::PI;
     }
-
 
     template <typename T>
-    inline constexpr Complex<T> cos(const Complex<T> &val)
+    inline  Complex<T> atan2(const Complex<T> &z)
     {
-        return Complex<T>(
-            sycl::cos(val.real()) * sycl::cosh(val.imag()),
-            -1 * (sycl::sin(val.real()) * sycl::sinh(val.imag())));
+        if (z.real() == 0 && z.imag() == 0)
+        {
+            return Complex<T>(0, 0);
+        }
+        Complex<T> one(1, 0);
+        Complex<T> z_squared = sycl::pow(z, 2);
+        Complex<T> denominator = one + sycl::sqrt(one + z_squared);
+        return T(2) * sycl::atan(z / denominator);
     }
-
 
     template <typename T>
-    inline constexpr Complex<T> tan(const Complex<T> &val)
+    inline Complex<T> atanpi(const Complex<T> &val)
     {
-        Complex<T> sin_val = sycl::sin(val);
-        Complex<T> cos_val = sycl::cos(val);
-        return sin_val / cos_val;
+        return sycl::atan(val) / syConstants::PI;
     }
-
 
     template <typename T>
-    inline constexpr Complex<T> sinh(const Complex<T> &val)
+    inline Complex<T> atan2pi(const Complex<T> &val)
     {
-        return Complex<T>(
-            sycl::sinh(val.real()) * sycl::cos(val.imag()),
-            sycl::cosh(val.real()) * sycl::sin(val.imag()));
+        return sycl::atan2(val) / syConstants::PI;
     }
-
 
     template <typename T>
-    inline constexpr Complex<T> cosh(const Complex<T> &val)
+    inline Complex<T> cbrt(const Complex<T>& val)
     {
-        return Complex<T>(
-            sycl::cosh(val.real()) * sycl::cos(val.imag()),
-            sycl::sinh(val.real()) * sycl::sin(val.imag()));
+        return sycl::pow(val, 1/3);
     }
-
 
     template <typename T>
-    inline constexpr Complex<T> tanh(const Complex<T> &val)
+    inline Complex<T> ceil(const Complex<T>& val)
     {
-        Complex<T> sinh_val = sinh(val);
-        Complex<T> cosh_val = cosh(val);
-        return sinh_val / cosh_val;
+        Complex<T> a(sycl::ceil(val.real()), sycl::ceil(val.imag()));
     }
-
 
 }

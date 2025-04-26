@@ -31,7 +31,6 @@ namespace sycl
 
         operator std::complex<T> const() { return std::complex<T>(a, b); }
 
-        template <typename T>
         constexpr Complex(const std::complex<T> &complex)
         {
             a = complex.real;
@@ -357,60 +356,63 @@ namespace sycl
 #undef d
     };
 
+    template <typename T>
+    Complex<T> I_V{0, 1};
+
     template <typename T, typename U>
-    constexpr Complex<U> operator+(const U &lhs, const Complex<T> &rhs)
+    Complex<U> operator+(const U &lhs, const Complex<T> &rhs)
     {
         Complex<U> temp(lhs, 0);
         return temp + rhs;
     }
 
     template <typename T, typename U>
-    constexpr Complex<U> operator-(const U &lhs, const Complex<T> &rhs)
+    Complex<U> operator-(const U &lhs, const Complex<T> &rhs)
     {
         Complex<U> temp(lhs, 0);
         return temp - rhs;
     }
 
     template <typename T, typename U>
-    constexpr Complex<U> operator*(const U &lhs, const Complex<T> &rhs)
+    Complex<U> operator*(const U &lhs, const Complex<T> &rhs)
     {
         Complex<U> temp(lhs, 0);
         return temp * rhs;
     }
 
     template <typename T, typename U>
-    constexpr Complex<U> operator/(const U &lhs, const Complex<T> &rhs)
+    Complex<U> operator/(const U &lhs, const Complex<T> &rhs)
     {
         Complex<U> temp(lhs, 0);
         return temp / rhs;
     }
 
     template <typename T>
-    inline constexpr T abs(const Complex<T> &val)
+    inline T abs(const Complex<T> &val)
     {
         return (T)sycl::sqrt(val.real() * val.real() + val.imag() * val.imag());
     }
 
     template <typename T>
-    inline constexpr double arg(const Complex<T> &val)
+    inline double arg(const Complex<T> &val)
     {
         return sycl::atan2<double, double>(val.imag(), val.real());
     }
 
     template <typename T>
-    inline constexpr T norm(const Complex<T> &val)
+    inline T norm(const Complex<T> &val)
     {
         return val.real() * val.real() + val.imag() * val.imag();
     }
 
     template <typename T>
-    inline constexpr Complex<T> conj(const Complex<T> &val)
+    inline Complex<T> conj(const Complex<T> &val)
     {
         return Complex<T>(val.real(), -val.imag());
     }
 
     template <typename T>
-    inline constexpr Complex<T> polar(const T &r, const T theta = 0)
+    inline Complex<T> polar(const T &r, const T theta = 0)
     {
         if (r < 0)
         {
@@ -420,13 +422,13 @@ namespace sycl
     }
 
     template <typename T>
-    inline constexpr Complex<T> exp(const Complex<T> &z)
+    inline Complex<T> exp(const Complex<T> &z)
     {
         return Complex<T>(sycl::exp(z.real()) * sycl::cos(z.imag()), sycl::sin(z.imag()));
     }
 
     template <typename T>
-    inline constexpr Complex<T> log(const Complex<T> &z)
+    inline Complex<T> log(const Complex<T> &z)
     {
         T r = sycl::abs(z);
         T theta = sycl::arg(z);
@@ -434,7 +436,7 @@ namespace sycl
     }
 
     template <typename T>
-    inline constexpr Complex<T> log10(const Complex<T> &z)
+    inline Complex<T> log10(const Complex<T> &z)
     {
         T r = sycl::abs(z);
         T theta = sycl::arg(z);
@@ -442,7 +444,7 @@ namespace sycl
     }
 
     template <typename T>
-    inline constexpr Complex<T> pow(const Complex<T> &val, const T &power)
+    inline Complex<T> pow(const Complex<T> &val, const T &power)
     {
         switch (power)
         {
@@ -450,26 +452,28 @@ namespace sycl
             return Complex<T>(1, 0);
         case 1:
             return val;
+        case 2:
+            return val * val;
         }
         T r = sycl::abs(val);
         r = sycl::pow(r, power);
         T theta = sycl::arg(val);
-        theta = power > 0 ? theta * power ? theta / sycl::abs(power);
+        theta = power > 0 ? theta * power : theta / sycl::abs(power);
         return Complex<T>(r * sycl::cos(theta), r * sin(theta));
     }
 
     template <typename T>
-    inline constexpr Complex<T> pow(const Complex<T> &val, const Complex<T> &power)
+    inline Complex<T> pow(const Complex<T> &val, const Complex<T> &power)
     {
         T r = sycl::abs(val);
         T theta = sycl::pow(r, power);
-        T a = sycl::pow(e, val.real() * sycl::log(r) - val.imag() * theta);
+        T a = sycl::pow(syConstants::e, val.real() * sycl::log(r) - val.imag() * theta);
         T b = val.imag() * sycl::log(r) * val.real() * theta;
         return Complex<T>(a * sycl::cos(b), a * sycl::sin(b));
     }
 
     template <typename T>
-    inline constexpr Complex<T> pow(const T &val, const Complex<T> &power)
+    inline Complex<T> pow(const T &val, const Complex<T> &power)
     {
         T a = sycl::pow(val, power.real());
         T b = power.imag() * sycl::log(val);
@@ -477,7 +481,7 @@ namespace sycl
     }
 
     template <typename T>
-    inline constexpr Complex<T> sqrt(const Complex<T> &val)
+    inline Complex<T> sqrt(const Complex<T> &val)
     {
         T r = sycl::abs(val);
         T a = sycl::sqrt((r + val.real()) / 2);
@@ -486,7 +490,7 @@ namespace sycl
     }
 
     template <typename T>
-    inline constexpr Complex<T> sin(const Complex<T> &val)
+    inline Complex<T> sin(const Complex<T> &val)
     {
         return Complex<T>(
             sycl::sin(val.real()) * sycl::cosh(val.imag()),
@@ -494,7 +498,15 @@ namespace sycl
     }
 
     template <typename T>
-    inline constexpr Complex<T> cos(const Complex<T> &val)
+    inline Complex<T> asin(const Complex<T> &val)
+    {
+        Complex<T> i(0, 1);
+        // -i * ln(i * z + sqrt(1 - z^2))
+        return -i * sycl::log(i * val + sycl::sqrt(Complex<T>(1, 0) - sycl::pow(val, 2)));
+    }
+
+    template <typename T>
+    inline Complex<T> cos(const Complex<T> &val)
     {
         return Complex<T>(
             sycl::cos(val.real()) * sycl::cosh(val.imag()),
@@ -502,7 +514,16 @@ namespace sycl
     }
 
     template <typename T>
-    inline constexpr Complex<T> tan(const Complex<T> &val)
+    inline Complex<T> acos(const Complex<T> &val)
+    {
+        Complex<T> one(1, 0);
+        Complex<T> i(0, -1);
+        // -i * ln(z + i * sqrt(1 - z^2))
+        return i * sycl::log(val + i * sycl::sqrt(one - sycl::pow(val, 2)));
+    }
+
+    template <typename T>
+    inline Complex<T> tan(const Complex<T> &val)
     {
         Complex<T> sin_val = sycl::sin(val);
         Complex<T> cos_val = sycl::cos(val);
@@ -510,7 +531,15 @@ namespace sycl
     }
 
     template <typename T>
-    inline constexpr Complex<T> sinh(const Complex<T> &val)
+    inline Complex<T> atan(const Complex<T> &val)
+    {
+        Complex<T> i(0, 1);
+        // (i/2) * ln((i + z)/(i - z))
+        return (i / T(2)) * sycl::log((i + val) / (i - val));
+    }
+
+    template <typename T>
+    inline Complex<T> sinh(const Complex<T> &val)
     {
         return Complex<T>(
             sycl::sinh(val.real()) * sycl::cos(val.imag()),
@@ -518,7 +547,14 @@ namespace sycl
     }
 
     template <typename T>
-    inline constexpr Complex<T> cosh(const Complex<T> &val)
+    inline Complex<T> asinh(const Complex<T> &val)
+    {
+        // ln(z + sqrt(z^2 + 1))
+        return sycl::log(val + sycl::sqrt(sycl::pow(val, 2) + Complex<T>(1, 0)));
+    }
+
+    template <typename T>
+    inline Complex<T> cosh(const Complex<T> &val)
     {
         return Complex<T>(
             sycl::cosh(val.real()) * sycl::cos(val.imag()),
@@ -526,13 +562,28 @@ namespace sycl
     }
 
     template <typename T>
-    inline constexpr Complex<T> tanh(const Complex<T> &val)
+    inline Complex<T> acosh(const Complex<T> &val)
+    {
+        // // ln(z + sqrt(z + 1) * sqrt(z - 1))
+        // return sycl::log(val + sycl::sqrt(val + Complex<T>(1, 0)) * sycl::sqrt(val - Complex<T>(1, 0)));
+        // Alternative form: ln(z + sqrt(z^2 - 1))
+        return sycl::log(val + sycl::sqrt(sycl::pow(val, 2) - Complex<T>(1, 0)));
+    }
+
+    template <typename T>
+    inline Complex<T> tanh(const Complex<T> &val)
     {
         Complex<T> sinh_val = sinh(val);
         Complex<T> cosh_val = cosh(val);
         return sinh_val / cosh_val;
     }
 
+    template <typename T>
+    inline Complex<T> atanh(const Complex<T> &val)
+    {
+        // (1/2) * ln((1 + z)/(1 - z))
+        return (Complex<T>(0.5, 0) * sycl::log((Complex<T>(1, 0) + val) / (Complex<T>(1, 0) - val)));
+    }
 }
 
 #undef CONSTEXPR_IF_UT

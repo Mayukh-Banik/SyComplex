@@ -1,5 +1,7 @@
 #pragma once
 
+#include <numbers>
+
 
 namespace syConstants
 {
