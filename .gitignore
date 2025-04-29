@@ -1,5 +1,4 @@
 .vscode
 *.out
 *.exe
-*temp*
-doctest.h
+build

@@ -1,0 +1,36 @@
+{
+    "version": 4,
+    "cmakeMinimumRequired": {
+      "major": 3,
+      "minor": 21,
+      "patch": 0
+    },
+    "configurePresets": [
+      {
+        "name": "default",
+        "displayName": "Default preset using Ninja, icpx, and SYCL",
+        "generator": "Ninja",
+        "binaryDir": "${sourceDir}/build",
+        "cacheVariables": {
+          "CMAKE_C_COMPILER": "icx",
+          "CMAKE_CXX_COMPILER": "icpx",
+          "CMAKE_CXX_FLAGS": "-fsycl",
+          "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+          "ENABLE_TESTING": "ON"
+        }    
+      }
+    ],
+    "buildPresets": [
+      {
+        "name": "default",
+        "configurePreset": "default"
+      }
+    ],
+    "testPresets": [
+      {
+        "name": "test",
+        "configurePreset": "default"
+      }
+    ]
+  }
+  
