@@ -220,6 +220,29 @@ namespace sycl
     {
         return val.real() * val.real() + val.imag() * val.imag();
     }
+    template <typename T>
+    bool operator<(const Complex<T> &lhs, const Complex<T> &rhs)
+    {
+        return sycl::norm(lhs) < sycl::norm(rhs) ? true : false;
+    }
+
+    template <typename T>
+    bool operator<=(const Complex<T> &lhs, const Complex<T> &rhs)
+    {
+        return sycl::norm(lhs) <= sycl::norm(rhs) ? true : false;
+    }
+
+    template <typename T>
+    bool operator>(const Complex<T> &lhs, const Complex<T> &rhs)
+    {
+        return sycl::norm(lhs) < sycl::norm(rhs) ? true : false;
+    }
+
+    template <typename T>
+    bool operator>=(const Complex<T> &lhs, const Complex<T> &rhs)
+    {
+        return sycl::norm(lhs) <= sycl::norm(rhs) ? true : false;
+    }
 
     template <typename T>
     inline Complex<T> conj(const Complex<T> &val)
@@ -437,11 +460,11 @@ namespace sycl
         return sycl::pow(val, 1 / 3);
     }
 
-    template <typename T>
-    inline Complex<T> ceil(const Complex<T> &val)
-    {
-        return Complex<T> a(sycl::ceil(val.real()), sycl::ceil(val.imag()));
-    }
+    // template <typename T>
+    // inline Complex<T> ceil(const Complex<T> &val)
+    // {
+    //     return val;
+    // }
 
     template <typename T>
     inline Complex<T> copysign(const Complex<T> &lhs, const Complex<T> &rhs)
@@ -531,18 +554,6 @@ namespace sycl
     }
 
     template <typename T>
-    inline Complex<T> floor(const Complex<T> &val)
-    {
-        return Complex<T>(sycl::floor(val.real()), sycl::floor(val.imag()));
-    }
-
-    template <typename T>
-    sycl::Complex<T> fma(const sycl::Complex<T> &a, const sycl::Complex<T> &b, const sycl::Complex<T> &c)
-    {
-        return a * b + c;
-    }
-
-    template <typename T>
     inline Complex<T> fmax(const Complex<T> &lhs, const Complex<T> &rhs)
     {
         return sycl::abs(lhs) < sycl::abs(rhs) ? rhs : lhs;
@@ -553,17 +564,6 @@ namespace sycl
     {
         return sycl::abs(lhs) > sycl::abs(rhs) ? rhs : lhs;
     }
-
-    template <typename T>
-    inline Complex<T> fmod(const Complex<T> &lhs, const Complex<T> &rhs)
-    {
-        Complex<T> a = lhs / rhs;
-        Complex<T> b(sycl::trunc(a.real()), sycl::trunc(a.imag()));
-        return lhs - rhs * b;
-    }
-
-    // do fract later
-    // do frexp later
 
     template <typename T>
     inline Complex<T> hypot(const Complex<T> &lhs, const Complex<T> &rhs)
@@ -658,6 +658,7 @@ namespace sycl
     {
         return sycl::pow(a, power);
     }
+
     template <typename T>
     Complex<T> powr(const Complex<T> &a, T power)
     {
@@ -668,9 +669,130 @@ namespace sycl
         return sycl::pow(a, power);
     }
 
-    template struct sycl::Complex<float>;
-    template struct sycl::Complex<double>;
-    template struct sycl::Complex<sycl::half>;
+    template <typename T>
+    Complex<T> rootn(const Complex<T> &a, int power)
+    {
+        double v = 1 / power;
+        return sycl::pow(a, power);
+    }
+
+    template <typename T>
+    Complex<T> rsqrt(const Complex<T> &a)
+    {
+        return 1 / sycl::sqrt(a);
+    }
+
+    template <typename T>
+    Complex<T> sinpi(const Complex<T> &a)
+    {
+        return sycl::sin(a * syConstants::PI);
+    }
+
+    template <typename T>
+    Complex<T> tanpi(const Complex<T> &a)
+    {
+        return sycl::tan(a * syConstants::PI);
+    }
+
+    template <typename T>
+    Complex<T> tgamma(const Complex<T> &z)
+    {
+        // alpha        beta        theta                           omega
+        // sqrt(2pi) * sqrt(1/z) * [ (1 / (12z - 1/10z)) + z] ^ z * e^-z
+        const T alpha = sycl::sqrt(2 * syConstants::PI);
+        const Complex<T> beta = sycl::rsqrt(z);
+        const Complex<T> theta = sycl::pow(((1 / (12 * z - (1 / (10 * z)))) + z), z);
+        const Complex<T> omega = sycl::exp(-z);
+        return alpha * beta * theta * omega;
+    }
+
+    template <typename T>
+    T lgamma(const Complex<T> &z)
+    {
+        return sycl::log(sycl::abs(sycl::tgamma(z)));
+    }
+
+    template <typename T>
+    struct plus
+    {
+        sycl::Complex<T> operator()(const sycl::Complex<T> &x, const sycl::Complex<T> &y) const
+        {
+            return x + y;
+        }
+    };
+
+    template <typename T>
+    struct multiplies
+    {
+        sycl::Complex<T> operator()(const sycl::Complex<T> &x, const sycl::Complex<T> &y) const
+        {
+            return x * y;
+        }
+    };
+
+    template <typename T>
+    struct bit_and
+    {
+        sycl::Complex<T> operator()(const sycl::Complex<T> &x, const sycl::Complex<T> &y) const
+        {
+            return Complex<T>(x.real() & y.real(), x.imag() & y.imag());
+        }
+    };
+
+    template <typename T>
+    struct bit_or
+    {
+        sycl::Complex<T> operator()(const sycl::Complex<T> &x, const sycl::Complex<T> &y) const
+        {
+            return Complex<T>(x.real() | y.real(), x.imag() | y.imag());
+        }
+    };
+
+    template <typename T>
+    struct bit_xor
+    {
+        sycl::Complex<T> operator()(const sycl::Complex<T> &x, const sycl::Complex<T> &y) const
+        {
+            return Complex<T>(x.real() ^ y.real(), x.imag() ^ y.imag());
+        }
+    };
+
+    template <typename T>
+    struct logical_and
+    {
+        sycl::Complex<T> operator()(const sycl::Complex<T> &x, const sycl::Complex<T> &y) const
+        {
+            return Complex<T>(x.real() && y.real(), x.imag() && y.imag());
+        }
+    };
+
+    template <typename T>
+    struct logical_or
+    {
+        sycl::Complex<T> operator()(const sycl::Complex<T> &x, const sycl::Complex<T> &y) const
+        {
+            return Complex<T>(x.real() || y.real(), x.imag() || y.imag());
+        }
+    };
+
+    template <typename T>
+    struct minimum
+    {
+        sycl::Complex<T> operator()(const sycl::Complex<T> &x, const sycl::Complex<T> &y) const
+        {
+            return (std::abs(x) < std::abs(y)) ? x : y;
+        }
+    };
+
+    template <typename T>
+    struct maximum
+    {
+        sycl::Complex<T> operator()(const sycl::Complex<T> &x, const sycl::Complex<T> &y) const
+        {
+            return (std::abs(x) > std::abs(y)) ? x : y;
+        }
+    };
+
     using Complex128 = Complex<double>;
     using Complex64 = Complex<float>;
     using Complex32 = Complex<sycl::half>;
